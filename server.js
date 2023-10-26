@@ -26,6 +26,6 @@ const db = mysql.createConnection(
 );
 
 // Start CMS
-const cms = new CMS();
+const cms = new CMS(db);
 
 cms.run();

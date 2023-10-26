@@ -1,7 +1,11 @@
+const { table } = require("console");
 const inquirer = require("inquirer");
+const mqsql = require("mysql2");
 
 class CMS {
-  constructor() {}
+  constructor(dbConnection) {
+    this.dbConnection = dbConnection;
+  }
 
   run() {
     return this.promptMainMenu();
@@ -30,7 +34,7 @@ class CMS {
         switch (answers.action) {
           case "View all departments":
             // Logic for viewing all departments
-            break;
+            return this.viewAllDepartments();
           case "View all roles":
             // Logic for viewing all roles
             break;
@@ -57,6 +61,19 @@ class CMS {
         // After an action is completed, show the menu again
         return this.promptMainMenu();
       });
+  }
+
+  viewAllDepartments() {
+    const query = "SELECT id, name FROM department";
+    this.dbConnection.query(query, (err, rows) => {
+      if (err) {
+        console.error(err);
+        return;
+      }
+      console.table(rows);
+
+      this.promptMainMenu();
+    });
   }
 }
 
