@@ -45,8 +45,7 @@ class CMS {
           case "Add an employee":
             return this.addEmployee();
           case "Update an employee role":
-            // Logic for updating an employee role
-            break;
+            return this.updateEmployeeRole();
           case "Exit":
             // Exit the application
             process.exit(0);
@@ -273,6 +272,68 @@ class CMS {
         }
       );
     });
+  }
+
+  updateEmployeeRole() {
+    // Fetch existing employees for the user to choose from
+    this.dbConnection.query(
+      'SELECT id, CONCAT(first_name, " ", last_name) AS fullName FROM employee',
+      (err, employees) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+
+        const employeeChoices = employees.map((emp) => ({
+          name: emp.fullName,
+          value: emp.id,
+        }));
+
+        // Fetch existing roles for the user to choose the new role from
+        this.dbConnection.query("SELECT id, title FROM role", (err, roles) => {
+          if (err) {
+            console.error(err);
+            return;
+          }
+
+          const roleChoices = roles.map((role) => ({
+            name: role.title,
+            value: role.id,
+          }));
+
+          return inquirer
+            .prompt([
+              {
+                type: "list",
+                name: "employeeId",
+                message: "Choose the employee whose role you want to update:",
+                choices: employeeChoices,
+              },
+              {
+                type: "list",
+                name: "newRoleId",
+                message: "Choose the new role for this employee:",
+                choices: roleChoices,
+              },
+            ])
+            .then((answer) => {
+              const query = "UPDATE employee SET role_id = ? WHERE id = ?;";
+              this.dbConnection.query(
+                query,
+                [answer.newRoleId, answer.employeeId],
+                (err, result) => {
+                  if (err) {
+                    console.error(err);
+                    return;
+                  }
+                  console.log(`Updated role for the selected employee.`);
+                  this.promptMainMenu();
+                }
+              );
+            });
+        });
+      }
+    );
   }
 
   runViewTableQuery(query) {
