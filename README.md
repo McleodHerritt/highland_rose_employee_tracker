@@ -1,5 +1,7 @@
 [![License: Unlicense](https://img.shields.io/badge/License-Unlicense-blue.svg)](https://opensource.org/licenses/Unlicense)
 
+[Video of Application in Use](https://drive.google.com/file/d/1OoGlc3AhEdsx8hSMd99MtnqaNOlnnDpu/view)
+
 # Highland Rose Company Management System
 
 A simple Node.js application to manage company departments, roles, and employees.
