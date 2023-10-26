@@ -37,6 +37,7 @@ class CMS {
             return this.viewAllDepartments();
           case "View all roles":
             // Logic for viewing all roles
+            return this.viewAllRoles();
             break;
           case "View all employees":
             // Logic for viewing all employees
@@ -65,13 +66,30 @@ class CMS {
 
   viewAllDepartments() {
     const query = "SELECT id, name FROM department";
+    this.runQuery(query);
+  }
+
+  viewAllRoles() {
+    const query = `
+      SELECT role.id AS 'Role ID', 
+             role.title AS 'Job Title', 
+             department.name AS 'Department', 
+             role.salary AS 'Salary'
+      FROM role
+      LEFT JOIN department ON role.department_id = department.id;
+    `;
+
+    this.runQuery(query);
+  }
+
+  runQuery(query) {
     this.dbConnection.query(query, (err, rows) => {
       if (err) {
         console.error(err);
         return;
       }
       console.table(rows);
-
+      // Return to the main menu after displaying the results
       this.promptMainMenu();
     });
   }
