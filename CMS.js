@@ -40,7 +40,7 @@ class CMS {
             return this.viewAllRoles();
             break;
           case "View all employees":
-            // Logic for viewing all employees
+            return this.viewAllEmployees();
             break;
           case "Add a department":
             // Logic for adding a department
@@ -78,6 +78,24 @@ class CMS {
       FROM role
       LEFT JOIN department ON role.department_id = department.id;
     `;
+
+    this.runQuery(query);
+  }
+
+  viewAllEmployees() {
+    const query = `
+    SELECT e.id AS 'Employee ID',
+           e.first_name AS 'First Name',
+           e.last_name AS 'Last Name',
+           role.title AS 'Job Title',
+           department.name AS 'Department',
+           role.salary AS 'Salary',
+           CONCAT(m.first_name, ' ', m.last_name) AS 'Manager'
+    FROM employee e
+    LEFT JOIN role ON e.role_id = role.id
+    LEFT JOIN department ON role.department_id = department.id
+    LEFT JOIN employee m ON e.manager_id = m.id;
+  `;
 
     this.runQuery(query);
   }
