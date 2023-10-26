@@ -26,6 +26,7 @@ class CMS {
             "Add a role",
             "Add an employee",
             "Update an employee role",
+            "View total utilized budget of a department",
             "Exit",
           ],
         },
@@ -46,6 +47,8 @@ class CMS {
             return this.addEmployee();
           case "Update an employee role":
             return this.updateEmployeeRole();
+          case "View total utilized budget of a department":
+            return this.viewDepartmentBudget();
           case "Exit":
             // Exit the application
             process.exit(0);
@@ -334,6 +337,20 @@ class CMS {
         });
       }
     );
+  }
+
+  viewDepartmentBudget() {
+    const query = `
+        SELECT 
+            department.name AS 'Department',
+            SUM(role.salary) AS 'Total Utilized Budget'
+        FROM employee
+        LEFT JOIN role ON employee.role_id = role.id
+        LEFT JOIN department ON role.department_id = department.id
+        GROUP BY department.id, department.name
+    `;
+
+    this.runViewTableQuery(query);
   }
 
   runViewTableQuery(query) {
