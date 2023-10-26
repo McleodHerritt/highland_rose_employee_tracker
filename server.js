@@ -1,12 +1,12 @@
+// constants
 const express = require("express");
-// Import and require mysql2
 const mysql = require("mysql2");
+const app = express();
+const PORT = process.env.PORT || 3001;
+const CMS = require("./CMS.js");
 
 // Require dotenv to load environment variables
 require("dotenv").config();
-
-const PORT = process.env.PORT || 3001;
-const app = express();
 
 // Express middleware
 app.use(express.urlencoded({ extended: false }));
@@ -24,3 +24,8 @@ const db = mysql.createConnection(
   },
   console.log(`Connected to the employees_db database.`)
 );
+
+// Start CMS
+const cms = new CMS();
+
+cms.run();
