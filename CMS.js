@@ -36,16 +36,12 @@ class CMS {
             return this.viewAllDepartments();
           case "View all roles":
             return this.viewAllRoles();
-            break;
           case "View all employees":
             return this.viewAllEmployees();
-            break;
           case "Add a department":
             return this.addDepartment();
-            break;
           case "Add a role":
-            // Logic for adding a role
-            break;
+            return this.addRole();
           case "Add an employee":
             // Logic for adding an employee
             break;
@@ -64,7 +60,7 @@ class CMS {
 
   viewAllDepartments() {
     const query = "SELECT id, name FROM department";
-    this.runQuery(query);
+    this.runViewTableQuery(query);
   }
 
   viewAllRoles() {
@@ -77,7 +73,7 @@ class CMS {
       LEFT JOIN department ON role.department_id = department.id;
     `;
 
-    this.runQuery(query);
+    this.runViewTableQuery(query);
   }
 
   viewAllEmployees() {
@@ -95,7 +91,7 @@ class CMS {
     LEFT JOIN employee m ON e.manager_id = m.id;
   `;
 
-    this.runQuery(query);
+    this.runViewTableQuery(query);
   }
 
   addDepartment() {
@@ -129,7 +125,72 @@ class CMS {
       });
   }
 
-  runQuery(query) {
+  addRole() {
+    // First, let's fetch the existing departments to let the user choose
+    this.dbConnection.query(
+      "SELECT id, name FROM department",
+      (err, departments) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+
+        const departmentChoices = departments.map((dept) => ({
+          name: dept.name,
+          value: dept.id,
+        }));
+
+        return inquirer
+          .prompt([
+            {
+              type: "input",
+              name: "roleName",
+              message: "Enter the name of the new role:",
+              validate: (input) => {
+                if (input) return true;
+                else {
+                  console.log("Please enter a role name.");
+                  return false;
+                }
+              },
+            },
+            {
+              type: "input",
+              name: "salary",
+              message: "Enter the salary for the new role:",
+              validate: (input) => {
+                const valid = !isNaN(parseFloat(input));
+                return valid || "Please enter a valid salary.";
+              },
+            },
+            {
+              type: "list",
+              name: "departmentId",
+              message: "Choose the department for the new role:",
+              choices: departmentChoices,
+            },
+          ])
+          .then((answer) => {
+            const query =
+              "INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?);";
+            this.dbConnection.query(
+              query,
+              [answer.roleName, answer.salary, answer.departmentId],
+              (err, result) => {
+                if (err) {
+                  console.error(err);
+                  return;
+                }
+                console.log("Added new role:", answer.roleName);
+                this.promptMainMenu();
+              }
+            );
+          });
+      }
+    );
+  }
+
+  runViewTableQuery(query) {
     this.dbConnection.query(query, (err, rows) => {
       if (err) {
         console.error(err);
