@@ -43,8 +43,7 @@ class CMS {
           case "Add a role":
             return this.addRole();
           case "Add an employee":
-            // Logic for adding an employee
-            break;
+            return this.addEmployee();
           case "Update an employee role":
             // Logic for updating an employee role
             break;
@@ -126,7 +125,7 @@ class CMS {
   }
 
   addRole() {
-    // First, let's fetch the existing departments to let the user choose
+    // fetch the existing departments to let the user choose
     this.dbConnection.query(
       "SELECT id, name FROM department",
       (err, departments) => {
@@ -188,6 +187,92 @@ class CMS {
           });
       }
     );
+  }
+
+  addEmployee() {
+    // Fetch existing roles for the employee to choose from
+    this.dbConnection.query("SELECT id, title FROM role", (err, roles) => {
+      if (err) {
+        console.error(err);
+        return;
+      }
+
+      const roleChoices = roles.map((role) => ({
+        name: role.title,
+        value: role.id,
+      }));
+
+      // Fetch existing employees to choose a manager
+      this.dbConnection.query(
+        'SELECT id, CONCAT(first_name, " ", last_name) AS fullName FROM employee',
+        (err, employees) => {
+          if (err) {
+            console.error(err);
+            return;
+          }
+
+          const employeeChoices = employees.map((emp) => ({
+            name: emp.fullName,
+            value: emp.id,
+          }));
+
+          employeeChoices.unshift({ name: "None", value: null }); // In case an employee has no manager
+
+          return inquirer
+            .prompt([
+              {
+                type: "input",
+                name: "firstName",
+                message: "Enter the employee's first name:",
+                validate: (input) =>
+                  input ? true : "Please enter a first name.",
+              },
+              {
+                type: "input",
+                name: "lastName",
+                message: "Enter the employee's last name:",
+                validate: (input) =>
+                  input ? true : "Please enter a last name.",
+              },
+              {
+                type: "list",
+                name: "roleId",
+                message: "Choose the role for the employee:",
+                choices: roleChoices,
+              },
+              {
+                type: "list",
+                name: "managerId",
+                message: "Choose the manager for the employee:",
+                choices: employeeChoices,
+              },
+            ])
+            .then((answer) => {
+              const query =
+                "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?);";
+              this.dbConnection.query(
+                query,
+                [
+                  answer.firstName,
+                  answer.lastName,
+                  answer.roleId,
+                  answer.managerId,
+                ],
+                (err, result) => {
+                  if (err) {
+                    console.error(err);
+                    return;
+                  }
+                  console.log(
+                    `Added new employee: ${answer.firstName} ${answer.lastName}`
+                  );
+                  this.promptMainMenu();
+                }
+              );
+            });
+        }
+      );
+    });
   }
 
   runViewTableQuery(query) {
