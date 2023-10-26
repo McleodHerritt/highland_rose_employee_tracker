@@ -33,17 +33,15 @@ class CMS {
       .then((answers) => {
         switch (answers.action) {
           case "View all departments":
-            // Logic for viewing all departments
             return this.viewAllDepartments();
           case "View all roles":
-            // Logic for viewing all roles
             return this.viewAllRoles();
             break;
           case "View all employees":
             return this.viewAllEmployees();
             break;
           case "Add a department":
-            // Logic for adding a department
+            return this.addDepartment();
             break;
           case "Add a role":
             // Logic for adding a role
@@ -98,6 +96,37 @@ class CMS {
   `;
 
     this.runQuery(query);
+  }
+
+  addDepartment() {
+    inquirer
+      .prompt([
+        {
+          type: "input",
+          name: "departmentName",
+          message: "Enter the name of the new department:",
+          validate: (input) => {
+            if (input) return true;
+            else {
+              console.log("Please enter a department name.");
+              return false;
+            }
+          },
+        },
+      ])
+      .then((answer) => {
+        const query = "INSERT INTO department (name) VALUES (?);";
+
+        this.dbConnection.query(query, answer.departmentName, (err, result) => {
+          if (err) {
+            console.error(err);
+            return;
+          }
+          console.log("Added new department:", answer.departmentName);
+
+          this.promptMainMenu();
+        });
+      });
   }
 
   runQuery(query) {
